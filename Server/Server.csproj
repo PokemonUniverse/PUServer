@@ -1,0 +1,128 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{97A63E5D-729C-440B-B335-69DA3D2D93FC}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Server</RootNamespace>
+    <AssemblyName>Server</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="log4net">
+      <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.5.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="SuperSocket.Common">
+      <HintPath>..\packages\SuperWebSocket.0.9.0.2\lib\net40\SuperSocket.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="SuperSocket.SocketBase">
+      <HintPath>..\packages\SuperWebSocket.0.9.0.2\lib\net40\SuperSocket.SocketBase.dll</HintPath>
+    </Reference>
+    <Reference Include="SuperSocket.SocketEngine">
+      <HintPath>..\packages\SuperWebSocket.0.9.0.2\lib\net40\SuperSocket.SocketEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="SuperWebSocket">
+      <HintPath>..\packages\SuperWebSocket.0.9.0.2\lib\net40\SuperWebSocket.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.ServiceProcess" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Configuration\ServerConfigConstants.cs" />
+    <Compile Include="Configuration\ServerConfigInfo.cs" />
+    <Compile Include="Creatures\Creature.cs" />
+    <Compile Include="Creatures\Player.cs" />
+    <Compile Include="Data\DummyCreatureDataProvider.cs" />
+    <Compile Include="Interfaces\ICreatureDataProvider.cs" />
+    <Compile Include="Interfaces\IServerConnection.cs" />
+    <Compile Include="Logic\Enums\MessageType.cs" />
+    <Compile Include="Logic\Exceptions\ManagerException.cs" />
+    <Compile Include="Logic\Exceptions\StartupException.cs" />
+    <Compile Include="Logic\HelperClasses\PositionUtils.cs" />
+    <Compile Include="Logic\Managers\GlobalManager.cs" />
+    <Compile Include="Logic\Managers\Manager.cs" />
+    <Compile Include="Logic\Managers\MapManager.cs" />
+    <Compile Include="Logic\ObjectBase.cs" />
+    <Compile Include="Logic\ServerConstants.cs" />
+    <Compile Include="Map\MapInstance.cs" />
+    <Compile Include="Interfaces\IMapProvider.cs" />
+    <Compile Include="Map\MapBase.cs" />
+    <Compile Include="Interfaces\IClientConnection.cs" />
+    <Compile Include="Map\TestMapProvider.cs" />
+    <Compile Include="Networking\Messages\MessageBase.cs" />
+    <Compile Include="Networking\Messages\MessageFactory.cs" />
+    <Compile Include="Networking\Messages\WalkMessage.cs" />
+    <Compile Include="Networking\Server.cs" />
+    <Compile Include="Networking\WebSocket\WebSocketClientConnection.cs" />
+    <Compile Include="Networking\WebSocket\WebSocketServerConnection.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Startup.cs">
+      <SubType>Component</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\NoNameLib\NoNameLib.Logic\NoNameLib.Logic.csproj">
+      <Project>{b82ec3ad-5ea5-4003-8a8c-fc2b0cb7e43d}</Project>
+      <Name>NoNameLib.Logic</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\NoNameLib\NoNameLib.Net\NoNameLib.Net.csproj">
+      <Project>{dae2d443-93f4-46a6-b42d-83ed13f4405c}</Project>
+      <Name>NoNameLib.Net</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\NoNameLib\NoNameLib.TileEditor\NoNameLib.TileEditor.csproj">
+      <Project>{d1df9a5b-965b-406a-8499-7dc9d2b79cea}</Project>
+      <Name>NoNameLib.TileEditor</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\NoNameLib\NoNameLib\NoNameLib.csproj">
+      <Project>{332d4c51-cca6-41f6-80c6-28a17677b9f7}</Project>
+      <Name>NoNameLib</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
