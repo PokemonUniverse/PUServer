@@ -11,6 +11,8 @@ namespace Server.Creatures
 
         private IClientConnection clientConnection;
 
+        private bool isAuthenticated;
+
         #endregion
 
         public Player(ICreatureDataProvider dataProvider, IClientConnection connection)
@@ -24,6 +26,27 @@ namespace Server.Creatures
         public void Initialize()
         {
             DataProvider.LoadPlayerData(this);
+            
+            // TODO: Send player info to client
+        }
+
+        public void SendMessage(MessageBase message)
+        {
+            if (clientConnection != null)
+            {
+                clientConnection.SendMessage(message);
+            }
+        }
+
+        /// <summary>
+        /// Disconnect and destroy player object
+        /// </summary>
+        public void Destroy()
+        {
+            if (clientConnection != null)
+                clientConnection.Disconnect();
+
+            clientConnection = null;
         }
 
         #region Movement
@@ -70,17 +93,6 @@ namespace Server.Creatures
 
         #endregion
 
-        /// <summary>
-        /// Disconnect and destroy player object
-        /// </summary>
-        public void Destroy()
-        {
-            if (clientConnection != null)
-                clientConnection.Disconnect();
-
-            clientConnection = null;
-        }
-
         #region Event Handlers
 
         /// <summary>
@@ -90,13 +102,40 @@ namespace Server.Creatures
         /// <param name="message"></param>
         void OnMessageReceived(object sender, MessageBase message)
         {
-            var messageType = message.GetMessageType();
+            if (message.RestrictedAccess != isAuthenticated)
+                return;
 
-            if (messageType == MessageType.Walk)
+            var messageType = message.GetMessageType();
+            if (messageType == MessageType.Authenticate)
+            {
+                Authenticate((AuthenticateMessage)message);
+            }
+            else if (messageType == MessageType.Walk)
             {
                 var walkMessage = (WalkMessage)message;
                 Move(walkMessage.Direction);
             }
+        }
+
+        #endregion
+
+        #region Message Methods
+
+        private void Authenticate(AuthenticateMessage message)
+        {
+            var result = DataProvider.Authenticate(this, message);
+            if (result == AuthenticateResult.Success)
+            {
+                isAuthenticated = true;
+            }
+
+            
+            // Send message back to client with the result
+            clientConnection.AuthenticateResult(result);
+
+            // Initialize player data if authenticated
+            if (isAuthenticated)
+                Initialize();
         }
 
         #endregion

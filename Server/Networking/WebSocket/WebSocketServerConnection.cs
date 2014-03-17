@@ -2,21 +2,38 @@
 using NoNameLib.Net.Packet;
 using Server.Interfaces;
 using Server.Networking.Messages;
-using SuperSocket.SocketBase;
-using SuperSocket.SocketBase.Protocol;
+using SuperWebSocket;
 
 namespace Server.Networking.WebSocket
 {
-    public class WebSocketServerConnection : AppServer<WebSocketClientConnection, BinaryRequestInfo>, IServerConnection
+    public class WebSocketServerConnection : WebSocketServer<ClientSession>, IServerConnection
     {
         #region IServerConnection
 
         public event EventHandler<IClientConnection> OnClientConnected;
 
-        public void AcceptConnections(int port)
+        public bool AcceptConnections(int port)
         {
-            this.Setup(9001);
-            this.Start();
+            if (!Setup(port))
+            {
+                NoNameLib.Logging.Logger.Error("WebSocketServerConnection", "AcceptConnections", "Failed to setup websocket");
+                return false;
+            }
+            
+            // Hookup events
+            NewDataReceived += WebSocketServerConnection_NewDataReceived;
+
+            // Start listening
+            return Start();
+        }
+
+        void WebSocketServerConnection_NewDataReceived(ClientSession session, byte[] data)
+        {
+            var message = MessageFactory.CreateMessage(new Packet(data));
+            if (message != null)
+            {
+                session.MessageReceived(message);
+            }
         }
 
         public void StopListening()
@@ -26,21 +43,10 @@ namespace Server.Networking.WebSocket
 
         #endregion
 
-        protected override void OnNewSessionConnected(WebSocketClientConnection session)
+        protected override void OnNewSessionConnected(ClientSession session)
         {
             if (OnClientConnected != null)
-                OnClientConnected(this, session);
-        }
-
-        protected override void ExecuteCommand(WebSocketClientConnection session, BinaryRequestInfo requestInfo)
-        {
-            var message = MessageFactory.CreateMessage(new Packet(requestInfo.Body));
-            if (message != null)
-            {
-                session.MessageReceived(message);
-            }
-
-            base.ExecuteCommand(session, requestInfo);
+                OnClientConnected(this, session.Client);
         }
     }
 

@@ -1,58 +1,48 @@
-﻿using System;
-using NoNameLib.Logic.Position;
-using Server.Creatures;
-using Server.Interfaces;
-using Server.Networking.Messages;
-using SuperSocket.SocketBase;
-using SuperSocket.SocketBase.Protocol;
+﻿using Server.Networking.Messages;
+using SuperWebSocket;
 
 namespace Server.Networking.WebSocket
 {
-    public class WebSocketClientConnection : AppSession<WebSocketClientConnection, BinaryRequestInfo>, IClientConnection
+    public class WebSocketClientConnection : ClientConnectionBase
     {
+        private ClientSession clientSession;
+
+        public WebSocketClientConnection(ClientSession clientSession)
+        {
+            this.clientSession = clientSession;
+        }
+
         #region IClientConnection
 
-        public event EventHandler<MessageBase> OnMessageReceived;
-
-        public long OwnerId { get; internal set; }
-
-        public void Disconnect()
+        public override void Disconnect()
         {
-        
+            clientSession.CloseWithHandshake("Disconnect");
+            clientSession = null;
         }
 
-        public void SendMessage()
+        public override void SendMessage(MessageBase message)
         {
-            //this.Send();
-            
-        }
+            var packet = message.ToPacket();
+            packet.Prepare();
 
-        public void CreatureVisibleAdd(Creature creature)
-        {
-            
-        }
-
-        public void CreatureVisibleRemove(Creature creature)
-        {
-            
-        }
-
-        public void CreatureMoved(Creature creature, Position from, Position to, bool isTeleport)
-        {
-            
-        }
-
-        public void MoveFailed(Position position)
-        {
-
+            clientSession.Send(packet.GetBuffer(), 0, packet.Size);
         }
 
         #endregion
+    }
 
-        internal void MessageReceived(MessageBase message)
+    public class ClientSession : WebSocketSession<ClientSession>
+    {
+        public WebSocketClientConnection Client { get; private set; }
+
+        public ClientSession()
         {
-            if (OnMessageReceived != null)
-                OnMessageReceived(this, message);
+            Client = new WebSocketClientConnection(this);
+        }
+
+        public void MessageReceived(MessageBase message)
+        {
+            Client.MessageReceived(message);
         }
     }
 }

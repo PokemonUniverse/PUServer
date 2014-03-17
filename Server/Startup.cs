@@ -1,9 +1,6 @@
 ﻿using System.ServiceProcess;
 using NoNameLib.Logging;
-using Server.Interfaces;
-using Server.Logic.Exceptions;
 using Server.Logic.Managers;
-using Server.Networking;
 
 namespace Server
 {
@@ -11,12 +8,13 @@ namespace Server
     {
         public enum StartupExceptions
         {
-            NoServerConnection
+            NoServerConnection,
+            InvalidPortNumber
         }
 
         private const string TAG = "Startup";
 
-        private IServerConnection serverConnection;
+        private Networking.Server server;
 
         #region Server control
 
@@ -51,7 +49,8 @@ namespace Server
 
         private void StartConnection()
         {
-           
+            server = new Networking.Server();
+            server.Start();
         }
 
         #region Service method overrides

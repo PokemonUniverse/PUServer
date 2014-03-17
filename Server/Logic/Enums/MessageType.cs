@@ -2,6 +2,8 @@
 {
     public enum MessageType : byte
     {
-        Walk = 0x01;
+        Authenticate = 0x01,
+
+        Walk = 0x10,
     }
 }

@@ -6,7 +6,7 @@ namespace Server.Interfaces
     {
         event EventHandler<IClientConnection> OnClientConnected;
 
-        void AcceptConnections(int port);
+        bool AcceptConnections(int port);
 
         void StopListening();
     }
