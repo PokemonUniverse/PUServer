@@ -13,15 +13,18 @@ namespace Server.Map
 
         private readonly TilePointTable tiles;
 
-        public MapBase(string name, TilePointTable tiles)
+        public MapBase(int id, string name, TilePointTable tiles)
         {
             this.tiles = tiles;
 
+            MapId = id;
             Name = name;
             MaxPlayersPerInstance = 0;
         }
 
         #region Properties
+
+        public int MapId { get; private set; }
 
         /// <summary>
         /// Name of the map

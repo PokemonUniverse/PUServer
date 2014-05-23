@@ -24,6 +24,7 @@ namespace Server.Logic.Managers
             }
             isInitialized = true;
             
+            managers.Add(typeof(CreatureManager), new CreatureManager());
             managers.Add(typeof(MapManager), new MapManager());
 
             foreach (var manager in managers.Values)

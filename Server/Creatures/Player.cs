@@ -1,6 +1,9 @@
-﻿using NoNameLib.Logic.Position;
+﻿using System;
+using NoNameLib.Logic.Enums;
+using NoNameLib.Logic.Position;
 using Server.Interfaces;
 using Server.Logic.Enums;
+using Server.Logic.Managers;
 using Server.Networking.Messages;
 
 namespace Server.Creatures
@@ -15,12 +18,20 @@ namespace Server.Creatures
 
         #endregion
 
+        #region Properties
+
+        public DateTime LastActivity { get; private set; }
+
+        #endregion
+
         public Player(ICreatureDataProvider dataProvider, IClientConnection connection)
-            : base(dataProvider)
+            : base(ObjectType.Player, dataProvider)
         {
             clientConnection = connection;
             clientConnection.OwnerId = this.UniqueId;
             clientConnection.OnMessageReceived += OnMessageReceived;
+
+            LastActivity = DateTime.UtcNow;
         }
 
         public void Initialize()
@@ -41,15 +52,22 @@ namespace Server.Creatures
         /// <summary>
         /// Disconnect and destroy player object
         /// </summary>
-        public void Destroy()
+        public void Destroy(string reason)
         {
             if (clientConnection != null)
-                clientConnection.Disconnect();
+                clientConnection.Disconnect(reason);
 
             clientConnection = null;
+
+            GlobalManager.GetManager<CreatureManager>().RemovePlayer(this);
         }
 
         #region Movement
+
+        public override void MoveSuccess(Direction direction)
+        {
+            // TODO: Send map tiles to player based on direction
+        }
 
         public override void MoveFailed()
         {
@@ -60,7 +78,7 @@ namespace Server.Creatures
         public override bool OnCreatureMoved(Creature creature, Position oldPosition, Position newPosition, bool isTeleport)
         {
             bool movedInsideViewport = base.OnCreatureMoved(creature, oldPosition, newPosition, isTeleport);
-            if (movedInsideViewport)
+            if (movedInsideViewport && creature.UniqueId != this.UniqueId)
             {
                 if (clientConnection != null)
                     clientConnection.CreatureMoved(creature, oldPosition, newPosition, isTeleport);
@@ -105,6 +123,8 @@ namespace Server.Creatures
             if (message.RestrictedAccess != isAuthenticated)
                 return;
 
+            LastActivity = DateTime.UtcNow;
+
             var messageType = message.GetMessageType();
             if (messageType == MessageType.Authenticate)
             {
@@ -128,7 +148,6 @@ namespace Server.Creatures
             {
                 isAuthenticated = true;
             }
-
             
             // Send message back to client with the result
             clientConnection.AuthenticateResult(result);

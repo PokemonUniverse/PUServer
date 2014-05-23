@@ -1,4 +1,5 @@
 ﻿using System.Threading;
+using Server.Logic.Enums;
 
 namespace Server.Logic
 {
@@ -6,11 +7,12 @@ namespace Server.Logic
     {
         private static long uniqueId;
 
-        public ObjectBase()
+        public ObjectBase(ObjectType objectType)
         {
             // Use atomic operation to increment object unique id
             Interlocked.Increment(ref uniqueId);
             UniqueId = uniqueId;
+            Type = objectType;
         }
 
         #region Properties
@@ -18,6 +20,8 @@ namespace Server.Logic
         public long UniqueId { get; private set; }
 
         public string Name { get; set; }
+
+        public ObjectType Type { get; protected set; }
 
         #endregion
     }

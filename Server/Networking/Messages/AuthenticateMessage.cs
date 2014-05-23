@@ -7,6 +7,7 @@ namespace Server.Networking.Messages
     {
         public string Username { get; private set; }
         public string Password { get; private set; }
+        public short Version { get; private set; }
 
         public AuthenticateResult Result { get; set; }
 
@@ -21,6 +22,7 @@ namespace Server.Networking.Messages
         {
             Username = packet.ReadString();
             Password = packet.ReadString();
+            Version = packet.ReadShort();
         }
 
         public AuthenticateMessage(AuthenticateResult result) 

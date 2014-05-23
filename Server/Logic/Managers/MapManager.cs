@@ -1,5 +1,6 @@
 ﻿using NoNameLib.Debug;
 using NoNameLib.Logging;
+using Server.Creatures;
 using Server.Interfaces;
 using Server.Logic.Exceptions;
 using Server.Map;
@@ -54,6 +55,28 @@ namespace Server.Logic.Managers
         public bool GetMap(int mapId, out MapBase mapBase)
         {
             return this.mapProvider.TryGetMap(mapId, out mapBase);
+        }
+
+        public void MoveCreatureToMap(Creature creature, int mapId)
+        {
+            if (creature.MapInstance != null && creature.MapInstance.Base.MapId == mapId)
+                return;
+
+            MapBase nextMap;
+            if (!GetMap(mapId, out nextMap))
+            {
+                Logger.Warning("MapManager", "MoveCreatureToMap", "Could not find map with id '{0}'.", mapId);
+                return;
+            }
+
+            MapInstance oldMapInstance = creature.MapInstance;
+
+            // Get available map instance and add creature to it
+            if (nextMap.GetAvailableInstance().AddCreature(creature))
+            {
+                if (oldMapInstance != null)
+                    oldMapInstance.RemoveCreature(creature);
+            }
         }
     }
 }

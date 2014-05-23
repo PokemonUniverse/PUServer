@@ -1,11 +1,11 @@
-﻿using System.Collections.Concurrent;
-using NoNameLib.Configuration;
+﻿using NoNameLib.Configuration;
 using NoNameLib.Logging;
 using Server.Configuration;
 using Server.Creatures;
 using Server.Data;
 using Server.Interfaces;
 using Server.Logic.Exceptions;
+using Server.Logic.Managers;
 using Server.Networking.WebSocket;
 
 namespace Server.Networking
@@ -14,8 +14,6 @@ namespace Server.Networking
     {
         private IServerConnection serverConnection;
         private readonly ICreatureDataProvider creatureDataProvider;
-
-        private readonly ConcurrentDictionary<long, Player> connectedPlayers = new ConcurrentDictionary<long, Player>(2, 150);
 
         public Server()
         {
@@ -42,7 +40,8 @@ namespace Server.Networking
         {
             // Create new player object
             var player = new Player(creatureDataProvider, e);
-            connectedPlayers.TryAdd(player.UniqueId, player);
+
+            GlobalManager.GetManager<CreatureManager>().AddPlayer(player);
         }
 
         public void Stop()

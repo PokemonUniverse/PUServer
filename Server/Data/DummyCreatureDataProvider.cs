@@ -14,6 +14,8 @@ namespace Server.Data
 
         public bool LoadPlayerData(Player player)
         {
+            player.Name = "Player-" + player.UniqueId;
+
             return true;
         }
     }

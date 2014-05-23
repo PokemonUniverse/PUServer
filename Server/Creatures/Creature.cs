@@ -5,6 +5,8 @@ using NoNameLib.Logic.Position;
 using NoNameLib.TileEditor.Enums;
 using Server.Interfaces;
 using Server.Logic;
+using Server.Map;
+using Server.Logic.Enums;
 
 namespace Server.Creatures
 {
@@ -12,12 +14,13 @@ namespace Server.Creatures
     {
         private readonly ConcurrentDictionary<long, Creature> visibleCreatures = new ConcurrentDictionary<long, Creature>();
 
-        protected Creature(ICreatureDataProvider dataProvider)
+        protected Creature(ObjectType objectType, ICreatureDataProvider dataProvider)
+            : base(objectType)
         {
             DataProvider = dataProvider;
         }
 
-        #region Events 
+        #region Events
 
         /// <summary>
         /// Subscribe to this event to receive when Player wants to move around
@@ -28,11 +31,27 @@ namespace Server.Creatures
 
         #region Properties
 
-        public MovementTypes Movement { get; set; }
-
         protected ICreatureDataProvider DataProvider { get; private set; }
 
+        /// <summary>
+        /// Current movement type (eg. Walk, Surf, Bike)
+        /// </summary>
+        public MovementTypes Movement { get; set; }
+
+        /// <summary>
+        /// Map instance in which the creature currently is
+        /// </summary>
+        public MapInstance MapInstance { get; set; }
+
+        /// <summary>
+        /// Current position on the map
+        /// </summary>
         public Position Position { get; set; }
+
+        /// <summary>
+        /// Direction which the character is facing
+        /// </summary>
+        public Direction Direction { get; set; }
 
         #endregion
 
@@ -42,9 +61,13 @@ namespace Server.Creatures
         /// <param name="direction">Direction to which the player should move</param>
         public void Move(Direction direction)
         {
+            Direction = direction;
+
             if (CreatureOnMove != null)
                 CreatureOnMove(this, direction);
         }
+
+        public abstract void MoveSuccess(Direction direction);
 
         public abstract void MoveFailed();
 
@@ -63,8 +86,7 @@ namespace Server.Creatures
             if (creature.UniqueId == this.UniqueId)
             {
                 this.Position = newPosition;
-
-                return false;
+                return true;
             }
 
             var canSeeOldPosition = this.Position.InRange(oldPosition, ServerConstants.CLIENT_VIEWPORT_CENTER_WIDTH, ServerConstants.CLIENT_VIEWPORT_CENTER_HEIGHT);

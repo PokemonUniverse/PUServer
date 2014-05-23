@@ -12,7 +12,7 @@ namespace Server.Interfaces
 
         long OwnerId { get; set; }
 
-        void Disconnect();
+        void Disconnect(string reason);
 
         void SendMessage(MessageBase message);
 
@@ -22,6 +22,6 @@ namespace Server.Interfaces
         void CreatureVisibleRemove(Creature creature);
         void CreatureMoved(Creature creature, Position from, Position to, bool isTeleport);
 
-        void MoveFailed(Position position);
+        void MoveFailed(Position position, string message = "");
     }
 }

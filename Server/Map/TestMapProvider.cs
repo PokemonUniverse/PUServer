@@ -16,9 +16,9 @@ namespace Server.Map
         {
             errors = "";
 
-            maps.Add(1, InitializeMap("TestMap1", 10, 5));
+            maps.Add(1, InitializeMap(1, "TestMap1", 10, 5));
             Logger.Verbose(TAG, "LoadMaps", "TestMap1 Loaded");
-            maps.Add(2, InitializeMap("TestMap2", 5, 10));
+            maps.Add(2, InitializeMap(2, "TestMap2", 5, 10));
             Logger.Verbose(TAG, "LoadMaps", "TestMap2 Loaded");
 
             return true;
@@ -36,7 +36,7 @@ namespace Server.Map
             return false;
         }
 
-        private MapBase InitializeMap(string name, int width, int height)
+        private MapBase InitializeMap(int id, string name, int width, int height)
         {
             var tiles = new TilePointTable();
             for (int x = 0; x < width; x++)
@@ -52,7 +52,7 @@ namespace Server.Map
                 }
             }
 
-            return new MapBase(name, tiles);
+            return new MapBase(id, name, tiles);
         }
     }
 }

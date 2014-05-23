@@ -14,9 +14,9 @@ namespace Server.Networking.WebSocket
 
         #region IClientConnection
 
-        public override void Disconnect()
+        public override void Disconnect(string reason)
         {
-            clientSession.CloseWithHandshake("Disconnect");
+            clientSession.CloseWithHandshake(reason);
             clientSession = null;
         }
 

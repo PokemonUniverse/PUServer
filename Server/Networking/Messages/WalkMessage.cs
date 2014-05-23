@@ -1,4 +1,5 @@
-﻿using NoNameLib.Logic.Enums;
+﻿using NoNameLib.Extension;
+using NoNameLib.Logic.Enums;
 using NoNameLib.Net.Packet;
 using Server.Logic.Enums;
 
@@ -17,7 +18,7 @@ namespace Server.Networking.Messages
         public WalkMessage(Packet packet) 
             : this()
         {
-            // TODO: Read packet into message
+            Direction = packet.ReadInt().ToEnum<Direction>();
         }
     }
 }

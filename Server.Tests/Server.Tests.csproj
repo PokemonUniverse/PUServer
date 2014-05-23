@@ -58,6 +58,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\NoNameLib\NoNameLib.Logic\NoNameLib.Logic.csproj">
+      <Project>{b82ec3ad-5ea5-4003-8a8c-fc2b0cb7e43d}</Project>
+      <Name>NoNameLib.Logic</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\NoNameLib\NoNameLib.TileEditor\NoNameLib.TileEditor.csproj">
       <Project>{d1df9a5b-965b-406a-8499-7dc9d2b79cea}</Project>
       <Name>NoNameLib.TileEditor</Name>

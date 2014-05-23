@@ -70,9 +70,11 @@
     <Compile Include="Interfaces\IServerConnection.cs" />
     <Compile Include="Logic\Enums\AuthenticateResult.cs" />
     <Compile Include="Logic\Enums\MessageType.cs" />
+    <Compile Include="Logic\Enums\ObjectType.cs" />
     <Compile Include="Logic\Exceptions\ManagerException.cs" />
     <Compile Include="Logic\Exceptions\StartupException.cs" />
     <Compile Include="Logic\HelperClasses\PositionUtils.cs" />
+    <Compile Include="Logic\Managers\CreatureManager.cs" />
     <Compile Include="Logic\Managers\GlobalManager.cs" />
     <Compile Include="Logic\Managers\Manager.cs" />
     <Compile Include="Logic\Managers\MapManager.cs" />
@@ -85,6 +87,8 @@
     <Compile Include="Map\TestMapProvider.cs" />
     <Compile Include="Networking\ClientConnectionBase.cs" />
     <Compile Include="Networking\Messages\AuthenticateMessage.cs" />
+    <Compile Include="Networking\Messages\CreatureMoveMessage.cs" />
+    <Compile Include="Networking\Messages\CreatureVisibilityMessage.cs" />
     <Compile Include="Networking\Messages\MessageBase.cs" />
     <Compile Include="Networking\Messages\MessageFactory.cs" />
     <Compile Include="Networking\Messages\WalkMessage.cs" />

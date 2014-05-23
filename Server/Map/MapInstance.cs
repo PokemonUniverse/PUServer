@@ -5,6 +5,7 @@ using NoNameLib.Logic.Enums;
 using NoNameLib.TileEditor.Collections;
 using NoNameLib.TileEditor.Enums;
 using Server.Creatures;
+using Server.Logic.Enums;
 
 namespace Server.Map
 {
@@ -14,30 +15,30 @@ namespace Server.Map
 
         private readonly ConcurrentDictionary<long, Creature> creatures;
         private readonly ConcurrentDictionary<long, Player> players;
-        private readonly MapBase mapBase;
 
         internal MapInstance(MapBase map, int instanceNumber, int maxPlayers, bool isMain = false)
         {
             creatures = new ConcurrentDictionary<long, Creature>(2, maxPlayers);
             players = new ConcurrentDictionary<long, Player>(2, maxPlayers);
 
-            this.mapBase = map;
+            Base = map;
 
             InstanceNumber = instanceNumber;
             IsMain = isMain;
+
+            Name = string.Format("{0}-{1}", Base.Name, InstanceNumber);
         }
 
         #region Properties
+
+        public MapBase Base { get; private set; }
 
         public int InstanceNumber { get; private set; }
 
         /// <summary>
         /// Name of the instance formatted as MapName-InstanceNumber.
         /// </summary>
-        public string Name
-        {
-            get { return string.Format("{0}-{1}", this.mapBase.Name, InstanceNumber); }
-        }
+        public string Name { get; private set; }
 
         /// <summary>
         /// Number of players active in this instance.
@@ -55,16 +56,69 @@ namespace Server.Map
 
         public bool HasAvailableSpot()
         {
-            return PlayerCount < this.mapBase.MaxPlayersPerInstance;
+            return PlayerCount < Base.MaxPlayersPerInstance;
         }
 
-        public bool AddPlayer(Player player)
+        public bool AddCreature(Creature creature)
         {
-            if (!AddCreature(player))
+            if (creatures.ContainsKey(creature.UniqueId))
             {
+                Logger.Debug(TAG, "AddCreature", "Creature with unique id '{0}' already exists in instance '{1}'.", creature.UniqueId, Name);
+                return true;
+            }
+            
+            if (!creatures.TryAdd(creature.UniqueId, creature))
+            {
+                Logger.Warning(TAG, "AddCreature", "Failed to add creature '{0}' to instance '{1}'.", creature.UniqueId, Name);                
                 return false;
             }
 
+            if (creature.Type == ObjectType.Player)
+            {
+                if (!AddPlayer((Player)creature))
+                    return false;
+            }
+
+            creature.MapInstance = this;
+            creature.CreatureOnMove += OnCreatureMove;
+
+            return true;
+        }
+
+        public bool RemoveCreature(Creature creature)
+        {
+            if (!creatures.ContainsKey(creature.UniqueId))
+            {
+                Logger.Debug(TAG, "RemoveCreature", "Creature with unique id '{0}' does not exists in instance '{1}'.", creature.UniqueId, Name);
+                return true;
+            }
+
+            if (!creatures.TryRemove(creature.UniqueId, out creature))
+            {
+                Logger.Warning(TAG, "RemoveCreature", "Failed to remove creature '{0}' from instance '{1}'.", creature.UniqueId, Name);
+                return false;
+            }
+
+            if (creature.Type == ObjectType.Player)
+            {
+                if (!RemovePlayer((Player)creature))
+                    return false;
+            }
+
+            creature.CreatureOnMove -= OnCreatureMove;
+
+            if (creature.MapInstance.Base.MapId == Base.MapId)
+                creature.MapInstance = null;
+
+            return true;
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private bool AddPlayer(Player player)
+        {
             if (players.ContainsKey(player.UniqueId))
             {
                 Logger.Debug(TAG, "AddPlayer", "Player with unique id '{0}' already exists in instance '{1}'.", player.UniqueId, Name);
@@ -80,49 +134,22 @@ namespace Server.Map
             return true;
         }
 
-        public bool AddCreature(Creature creature)
+        private bool RemovePlayer(Player player)
         {
-            if (creatures.ContainsKey(creature.UniqueId))
+            if (!players.ContainsKey(player.UniqueId))
             {
-                Logger.Debug(TAG, "AddCreature", "Creature with unique id '{0}' already exists in instance '{1}'.", creature.UniqueId, Name);
+                Logger.Debug(TAG, "AddPlayer", "Player with unique id '{0}' does not exists in instance '{1}'.", player.UniqueId, Name);
                 return true;
             }
-            
-            if (creatures.TryAdd(creature.UniqueId, creature))
+
+            if (!players.TryRemove(player.UniqueId, out player))
             {
-                creature.CreatureOnMove += OnCreatureMove;
-
-                return true;
+                Logger.Warning(TAG, "AddCreature", "Failed to remove player '{0}' from instance '{1}'.", player.UniqueId, Name);
+                return false;
             }
-            
-            Logger.Warning(TAG, "AddCreature", "Failed to add creature '{0}' to instance '{1}'.", creature.UniqueId, Name);
 
-            return false;
+            return true;
         }
-
-        public bool RemoveCreature(Creature creature)
-        {
-            if (!creatures.ContainsKey(creature.UniqueId))
-            {
-                Logger.Debug(TAG, "RemoveCreature", "Creature with unique id '{0}' does not exists in disctict '{1}'.", creature.UniqueId, Name);
-                return true;
-            }
-
-            if (creatures.TryRemove(creature.UniqueId, out creature))
-            {
-                creature.CreatureOnMove -= OnCreatureMove;
-
-                return true;
-            }
-            
-            Logger.Warning(TAG, "RemoveCreature", "Failed to remove creature '{0}' from district '{1}'.", creature.UniqueId, Name);
-
-            return false;
-        }
-
-        #endregion
-
-        #region Private Methods
 
         private bool InternalCreatureMove(Creature creature, Direction direction)
         {
@@ -149,7 +176,7 @@ namespace Server.Map
             }
 
             // Get TilePointLayer for new position
-            var newTilePointLayer = this.mapBase.GetTilePointLayer(newPosition);
+            var newTilePointLayer = this.Base.GetTilePointLayer(newPosition);
             if (newTilePointLayer == null)
                 return false;
 
@@ -192,10 +219,14 @@ namespace Server.Map
 
         #region Event Handlers
 
-        private void OnCreatureMove(object sender, Direction moveDirection)
+        private void OnCreatureMove(object sender, Direction direction)
         {
             var creature = (Creature)sender;
-            if (!InternalCreatureMove(creature, moveDirection))
+            if (InternalCreatureMove(creature, direction))
+            {
+                creature.MoveSuccess(direction);
+            }
+            else
             {
                 creature.MoveFailed();
             }

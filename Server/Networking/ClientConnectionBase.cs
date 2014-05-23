@@ -13,7 +13,7 @@ namespace Server.Networking
 
         public long OwnerId { get; set; }
         
-        public abstract void Disconnect();
+        public abstract void Disconnect(string reason);
 
         public abstract void SendMessage(MessageBase message);
 
@@ -32,20 +32,20 @@ namespace Server.Networking
 
         public void CreatureVisibleAdd(Creature creature)
         {
-            throw new NotImplementedException();
+            SendMessage(new CreatureVisibilityMessage(creature, true));
         }
 
         public void CreatureVisibleRemove(Creature creature)
         {
-            throw new NotImplementedException();
+            SendMessage(new CreatureVisibilityMessage(creature, false));
         }
 
-        public void CreatureMoved(Creature creature, Position @from, Position to, bool isTeleport)
+        public void CreatureMoved(Creature creature, Position from, Position to, bool isTeleport)
         {
-            throw new NotImplementedException();
+            SendMessage(new CreatureMoveMessage(creature, from, to , isTeleport));
         }
 
-        public void MoveFailed(Position position)
+        public void MoveFailed(Position position, string message = "")
         {
             throw new NotImplementedException();
         }
